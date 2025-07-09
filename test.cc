@@ -1,15 +1,22 @@
-template<typename T> void foo(T) {}
-void foo(int) {}
-void foo(double);
-template<> void foo(int) {}
+template<typename T>
+class A {
+public:
+    void AAAAAAA(typename T::something xd) {}
+};
+
+template<typename T>
+class B : public A<T> {
+public:
+    void BBBBBBBBB() {}
+};
+
+struct TT {
+    using something = int;
+};
 
 int main() {
-    foo(1);
-    foo(1.0);
+    B<TT> a;
+    a.BBBBBBBBB();
+    // a.A::AAAAAAA();
     return 0;
-}
-
-void foo(double) {
-    // This function is defined to handle double arguments.
-    // It can be used to demonstrate the specialization of the template function.
 }

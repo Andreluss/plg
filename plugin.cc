@@ -77,6 +77,18 @@ static bool compare_foo_signatures(tree decl1, tree decl2) {
     return true;
 }
 
+void walk_functions(tree current_decl = NULL) {
+    if (current_decl) 
+        std::cerr << "We're at function: " << cxx_printable_name(current_decl, 31) << std::endl;
+    else 
+        std::cerr << "No current function, walking all functions." << std::endl;
+    std::cerr << "\tAll functions in the code:" << std::endl;
+    cgraph_node *node;
+    FOR_EACH_FUNCTION(node) {
+        std::cerr << "\t\t\t " << cxx_printable_name(node->decl, 31) << std::endl;
+    }
+}
+
 // Our pass implementation
 class foo_comparison_pass : public gimple_opt_pass {
 public:
@@ -87,11 +99,10 @@ public:
         tree current_decl = fun->decl;
         const char* name = get_function_name(current_decl);
         
+        walk_functions();
         
         if (name && strcmp(name, "foo") == 0) {
             // Compare with all other functions
-
-
             cgraph_node *node;
             FOR_EACH_FUNCTION(node) {
                 tree other_decl = node->decl;
@@ -131,6 +142,11 @@ const pass_data foo_comparison_pass::pass_data = {
     0
 };
 
+void cb_finish_unit(void *gcc_data, void *user_data) {
+    walk_functions();
+    
+}
+
 // Plugin initialization
 int plugin_init(struct plugin_name_args *plugin_info,
                 struct plugin_gcc_version *version) {
@@ -150,5 +166,11 @@ int plugin_init(struct plugin_name_args *plugin_info,
                      NULL,
                      &pass_info);
     
+    register_callback(plugin_info->base_name,
+                     PLUGIN_FINISH_UNIT,
+                     cb_finish_unit,
+                     NULL);
+
+
     return 0;
 }
